@@ -38,7 +38,13 @@ static char *config_get_value(const char *config_buffer, const char *value) {
 	while (*curr != '\n' && *curr != 0 && curr != end)
 		*tmp_ptr++ = *curr++;
 
-	*(tmp_ptr+1) = 0;
+	*tmp_ptr = 0;
+
+	// Trim trailing whitespace
+	while (tmp_ptr > tmp_buffer && (*(tmp_ptr - 1) == ' ' || *(tmp_ptr - 1) == '\t')) {
+		*(tmp_ptr - 1) = 0;
+		tmp_ptr--;
+	}
 
 	return tmp_buffer;
 }
