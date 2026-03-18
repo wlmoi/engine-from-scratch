@@ -18,4 +18,4 @@ GLFW_LIBS=-LC:/msys64/mingw64/lib -lglfw3 -lopengl32 -lgdi32
 libs=-lm $(SDL2_CFLAGS) $(SDL2_LIBS) $(GLFW_LIBS)
 
 build:
-	gcc -g3 -O0 -I./deps/include $(files) $(libs) -o mygame.out
+	gcc -g3 -O0 -I./deps/include $(files) $(libs) -o mygame.exe

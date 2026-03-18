@@ -14,6 +14,7 @@ static void update_key_state(u8 current_state, Key_State *key_state) {
 }
 
 void input_update() {
+	SDL_PumpEvents();
 	const u8 *keyboard_state = SDL_GetKeyboardState(NULL);
 
 	update_key_state(keyboard_state[global.config.keybinds[INPUT_KEY_LEFT]], &global.input.left);

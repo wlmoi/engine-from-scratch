@@ -1,10 +1,12 @@
 #pragma once
 
+#include <stdbool.h>
 #include "input.h"
 #include "types.h"
 
 typedef struct config {
 	u8 keybinds[5];
+	bool is_hard_mode;
 } Config_State;
 
 void config_init(void);
