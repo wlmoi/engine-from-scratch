@@ -135,10 +135,18 @@ static void append_quad(vec2 position, vec2 size, vec4 texture_coordinates, vec4
 	});
 }
 
-void render_end(SDL_Window *window, u32 batch_texture_ids[8]) {
+void render_flush(u32 batch_texture_ids[8]) {
 	render_batch(list_batch->items, list_batch->len, batch_texture_ids);
+}
 
+
+void render_present(SDL_Window *window) {
 	SDL_GL_SwapWindow(window);
+}
+
+void render_end(SDL_Window *window, u32 batch_texture_ids[8]) {
+	render_flush(batch_texture_ids);
+	render_present(window);
 }
 
 void render_quad(vec2 pos, vec2 size, vec4 color) {

@@ -20,10 +20,6 @@
 
 void reset(void);
 
-static void render_hud(void);
-static void render_controls_hint(void);
-static void render_text_3x5(const char *text, f32 x, f32 y, f32 scale, vec4 color);
-
 static Mix_Music *MUSIC_STAGE_1;
 static Mix_Chunk *SOUND_JUMP;
 static Mix_Chunk *SOUND_SHOOT;
@@ -107,68 +103,6 @@ static u8 enemy_mask = COLLISION_LAYER_PLAYER | COLLISION_LAYER_TERRAIN;
 static u8 player_mask = COLLISION_LAYER_ENEMY | COLLISION_LAYER_TERRAIN | COLLISION_LAYER_ENEMY_PASSTHROUGH;
 static u8 fire_mask = COLLISION_LAYER_ENEMY | COLLISION_LAYER_PLAYER;
 static u8 projectile_mask = COLLISION_LAYER_ENEMY | COLLISION_LAYER_TERRAIN;
-
-static const char *glyph_3x5(char c) {
-    switch (c) {
-    case 'A': return "010101111101101";
-    case 'B': return "110101110101110";
-    case 'C': return "011100100100011";
-    case 'D': return "110101101101110";
-    case 'E': return "111100110100111";
-    case 'F': return "111100110100100";
-    case 'H': return "101101111101101";
-    case 'I': return "111010010010111";
-    case 'J': return "111001001101010";
-    case 'L': return "100100100100111";
-    case 'M': return "101111101101101";
-    case 'O': return "010101101101010";
-    case 'P': return "110101110100100";
-    case 'Q': return "010101101111011";
-    case 'S': return "011100010001110";
-    case 'T': return "111010010010010";
-    case 'U': return "101101101101111";
-    case 'V': return "101101101101010";
-    case 'W': return "101101101111101";
-    case 'X': return "101101010101101";
-    case '/': return "001001010100100";
-    case '1': return "010110010010111";
-    case ':': return "000010000010000";
-    case ' ': return "000000000000000";
-    default: return "000000000000000";
-    }
-}
-
-static void render_text_3x5(const char *text, f32 x, f32 y, f32 scale, vec4 color) {
-    for (usize i = 0; text[i] != 0; ++i) {
-        char c = text[i];
-        if (c >= 'a' && c <= 'z') {
-            c = (char)(c - 32);
-        }
-
-        const char *glyph = glyph_3x5(c);
-        f32 x_offset = x + i * (4.0f * scale);
-
-        for (u8 row = 0; row < 5; ++row) {
-            for (u8 col = 0; col < 3; ++col) {
-                if (glyph[row * 3 + col] == '1') {
-                    f32 px = x_offset + col * scale;
-                    f32 py = y - row * scale;
-                    render_quad((vec2){px, py}, (vec2){scale, scale}, color);
-                }
-            }
-        }
-    }
-}
-
-static void render_controls_hint(void) {
-    vec4 bg = {0.08f, 0.08f, 0.1f, 0.78f};
-    vec4 fg = {0.95f, 0.95f, 0.95f, 0.95f};
-    vec4 accent = {0.98f, 0.78f, 0.20f, 0.95f};
-
-    render_quad((vec2){render_width * 0.5f, render_height - 18}, (vec2){360, 34}, bg);
-    render_text_3x5("MOVE A/D  JUMP W  SHOOT E", render_width * 0.5f - 172, render_height - 11, 3, fg);
-    render_text_3x5("ESC QUIT  F1 HITBOX", render_width * 0.5f - 132, render_height - 24, 3, accent);
-}
 
 void projectile_on_hit(Body *self, Body *other, Hit hit) {
 	if (other->collision_layer == COLLISION_LAYER_ENEMY) {
@@ -398,50 +332,6 @@ void reset(void) {
     entity_create((vec2){render_width * 0.5 - 16, -16}, (vec2){32, 64}, (vec2){0, 0}, (vec2){0, 0}, 0, 0, true, anim_fire_id, NULL, NULL);
 }
 
-static void render_hud(void) {
-    vec4 mode_color;
-    if (global.config.is_hard_mode) {
-        mode_color[0] = 0.85f;
-        mode_color[1] = 0.22f;
-        mode_color[2] = 0.22f;
-        mode_color[3] = 0.95f;
-    } else {
-        mode_color[0] = 0.22f;
-        mode_color[1] = 0.72f;
-        mode_color[2] = 0.35f;
-        mode_color[3] = 0.95f;
-    }
-
-    // Top-left mode badge: red for hard, green for easy.
-    render_quad((vec2){70, render_height - 18}, (vec2){120, 16}, mode_color);
-    render_quad((vec2){16, render_height - 18}, (vec2){12, 16}, (vec4){0.95f, 0.95f, 0.95f, 0.95f});
-
-    if (global.config.is_hard_mode) {
-        for (u8 i = 0; i < PLAYER_HEALTH_HARD; ++i) {
-            f32 x = 24 + i * 22;
-            render_quad((vec2){x, render_height - 44}, (vec2){16, 12}, (vec4){0.18f, 0.18f, 0.18f, 0.95f});
-
-            if (i < player_health) {
-                vec4 hp_color;
-                hp_color[0] = 0.95f;
-                hp_color[1] = 0.15f;
-                hp_color[2] = 0.15f;
-                hp_color[3] = 0.95f;
-                if (player_invuln_timer > 0 && ((i32)(player_invuln_timer * 30) % 2) == 0) {
-                    hp_color[3] = 0.5f;
-                }
-                render_quad((vec2){x, render_height - 44}, (vec2){12, 8}, hp_color);
-            }
-        }
-    } else {
-        // Easy mode shows an always-full endurance bar (infinite HP behavior).
-        render_quad((vec2){80, render_height - 44}, (vec2){124, 12}, (vec4){0.18f, 0.18f, 0.18f, 0.95f});
-        render_quad((vec2){80, render_height - 44}, (vec2){118, 8}, (vec4){0.10f, 0.84f, 0.62f, 0.95f});
-    }
-
-	render_controls_hint();
-}
-
 int main(int argc, char *argv[]) {
 	time_init(60);
 	SDL_Window *window = render_init();
@@ -573,8 +463,6 @@ int main(int argc, char *argv[]) {
         // Render terrain/map.
         render_sprite_sheet_frame(&sprite_sheet_map, 0, 0, (vec2){render_width / 2.0, render_height / 2.0}, false, (vec4){1, 1, 1, 0.2}, texture_slots);
 
-		render_hud();
-
         // Debug render bounding boxes.
 		if (debug_draw_hitboxes) {
             for (usize i = 0; i < entity_count(); ++i) {
@@ -615,7 +503,8 @@ int main(int argc, char *argv[]) {
             animation_render(anim, pos, WHITE, texture_slots);
 		}
 
-		render_end(window, texture_slots);
+        render_flush(texture_slots);
+        render_present(window);
 
 		time_update_late();
 	}

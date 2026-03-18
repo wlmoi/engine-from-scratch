@@ -28,6 +28,8 @@ typedef struct sprite_sheet {
 
 SDL_Window *render_init(void);
 void render_begin(void);
+void render_flush(u32 batch_texture_ids[8]);
+void render_present(SDL_Window *window);
 void render_end(SDL_Window *window, u32 texture_ids[8]);
 void render_quad(vec2 pos, vec2 size, vec4 color);
 void render_quad_line(vec2 pos, vec2 size, vec4 color);
